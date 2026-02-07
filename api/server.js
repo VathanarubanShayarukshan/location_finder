@@ -1,40 +1,43 @@
 // api/server.js
 let logs = [];
 
+// Read raw JSON body
 async function readBody(req) {
   return new Promise(resolve => {
     let data = "";
     req.on("data", chunk => data += chunk);
     req.on("end", () => {
-      try { resolve(JSON.parse(data || "{}")); } 
-      catch { resolve({}); }
+      try { resolve(JSON.parse(data || "{}")); } catch { resolve({}); }
     });
   });
 }
 
 export default async function handler(req, res) {
-  const path = req.url.split("?")[0];
   const method = req.method;
 
-  // POST /log-location
-  if (method === "POST" && path === "/log-location") {
+  // --------------------------
+  // POST /api/server
+  // --------------------------
+  if (method === "POST") {
     const body = await readBody(req);
-
     logs.push({
       time: new Date().toLocaleString(),
       ip: req.headers["x-forwarded-for"] || req.socket?.remoteAddress || "unknown",
       latitude: body.lat || null,
       longitude: body.lon || null
     });
-
     return res.status(200).json({ status: "logged", count: logs.length });
   }
 
-  // GET /get-logs
-  if (method === "GET" && path === "/get-logs") {
+  // --------------------------
+  // GET /api/server
+  // --------------------------
+  if (method === "GET") {
     return res.status(200).json(logs);
   }
 
-  // 404
-  return res.status(404).json({ error: "Invalid route" });
+  // --------------------------
+  // Default
+  // --------------------------
+  return res.status(404).json({ error: "Invalid request" });
 }

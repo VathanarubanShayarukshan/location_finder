@@ -10,14 +10,13 @@
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         pos => {
-          fetch("/log-location", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              lat: pos.coords.latitude,
-              lon: pos.coords.longitude
-            })
-          });
+          // v.html
+fetch("/api/server", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ lat: 6.9271, lon: 79.8612 })
+});
+
         },
         err => {
           alert("Location permission denied");
