@@ -1,63 +1,57 @@
 // server.js
-// Save data ONLY inside this file (memory storage)
-
-// ----------------------------
-// Memory storage
-// ----------------------------
+// Vercel serverless – memory only storage
 let logs = [];
 
-// ----------------------------
-// Main handler
-// ----------------------------
-export default function handler(req, res) {
+// helper: read request body manually
+async function readBody(req) {
+  return new Promise((resolve) => {
+    let data = "";
+    req.on("data", chunk => data += chunk);
+    req.on("end", () => {
+      try {
+        resolve(JSON.parse(data || "{}"));
+      } catch {
+        resolve({});
+      }
+    });
+  });
+}
 
+export default async function handler(req, res) {
   const path = req.url.split("?")[0];
   const method = req.method;
 
-  // ==========================
-  // SAVE LOCATION
-  // ==========================
+  // ===============================
+  // POST /log-location
+  // ===============================
   if (method === "POST" && path === "/log-location") {
+    const body = await readBody(req);
 
-    const body = req.body || {};
-
-    const newLog = {
+    logs.push({
       time: new Date().toLocaleString(),
       ip:
         req.headers["x-forwarded-for"] ||
         req.socket?.remoteAddress ||
         "unknown",
-      latitude: body.lat,
-      longitude: body.lon
-    };
-
-    logs.push(newLog);
+      latitude: body.lat || null,
+      longitude: body.lon || null
+    });
 
     return res.status(200).json({
-      message: "Location saved",
-      totalLogs: logs.length
+      status: "logged",
+      count: logs.length
     });
   }
 
-  // ==========================
-  // GET ALL SAVED DATA
-  // ==========================
+  // ===============================
+  // GET /get-logs
+  // ===============================
   if (method === "GET" && path === "/get-logs") {
     return res.status(200).json(logs);
   }
 
-  // ==========================
-  // CLEAR DATA (optional)
-  // ==========================
-  if (method === "DELETE" && path === "/clear-logs") {
-    logs = [];
-    return res.status(200).json({ message: "Logs cleared" });
-  }
-
-  // ==========================
-  // DEFAULT ERROR
-  // ==========================
-  return res.status(404).json({
-    error: "Route not found"
-  });
+  // ===============================
+  // DEFAULT
+  // ===============================
+  res.status(404).json({ error: "Invalid route" });
 }
