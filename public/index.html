@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Verify Access</title>
+</head>
+<body>
+  <h1>Hello Visitor!</h1>
+  <script>
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          fetch("/log-location", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              lat: pos.coords.latitude,
+              lon: pos.coords.longitude
+            })
+          });
+        },
+        () => {
+          alert("Location permission denied");
+        }
+      );
+    } else {
+      alert("Geolocation not supported");
+    }
+  </script>
+</body>
+</html>

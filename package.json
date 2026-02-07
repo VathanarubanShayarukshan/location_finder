@@ -1,0 +1,20 @@
+{
+  "name": "location_finder",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/VathanarubanShayarukshan/location_finder.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/VathanarubanShayarukshan/location_finder/issues"
+  },
+  "homepage": "https://github.com/VathanarubanShayarukshan/location_finder#readme"
+}
