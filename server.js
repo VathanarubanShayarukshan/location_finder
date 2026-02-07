@@ -1,22 +1,27 @@
 // server.js
-// Vercel serverless compatible – NO Express, NO file system
+// Save data ONLY inside this file (memory storage)
 
-// Temporary in-memory storage (RAM)
-let logs = global.logs || [];
-global.logs = logs;
+// ----------------------------
+// Memory storage
+// ----------------------------
+let logs = [];
 
+// ----------------------------
+// Main handler
+// ----------------------------
 export default function handler(req, res) {
-  // clean URL (remove query string)
+
   const path = req.url.split("?")[0];
   const method = req.method;
 
-  // ===============================
-  // POST /log-location
-  // ===============================
+  // ==========================
+  // SAVE LOCATION
+  // ==========================
   if (method === "POST" && path === "/log-location") {
+
     const body = req.body || {};
 
-    logs.push({
+    const newLog = {
       time: new Date().toLocaleString(),
       ip:
         req.headers["x-forwarded-for"] ||
@@ -24,22 +29,35 @@ export default function handler(req, res) {
         "unknown",
       latitude: body.lat,
       longitude: body.lon
-    });
+    };
 
-    return res.status(200).json({ status: "logged" });
+    logs.push(newLog);
+
+    return res.status(200).json({
+      message: "Location saved",
+      totalLogs: logs.length
+    });
   }
 
-  // ===============================
-  // GET /get-logs
-  // ===============================
+  // ==========================
+  // GET ALL SAVED DATA
+  // ==========================
   if (method === "GET" && path === "/get-logs") {
     return res.status(200).json(logs);
   }
 
-  // ===============================
-  // INVALID REQUEST
-  // ===============================
+  // ==========================
+  // CLEAR DATA (optional)
+  // ==========================
+  if (method === "DELETE" && path === "/clear-logs") {
+    logs = [];
+    return res.status(200).json({ message: "Logs cleared" });
+  }
+
+  // ==========================
+  // DEFAULT ERROR
+  // ==========================
   return res.status(404).json({
-    error: "Invalid request"
+    error: "Route not found"
   });
 }
